@@ -11,6 +11,9 @@
 %
 % PACKAGE INFO
 
+import ott.*
+import ott.utils.*
+
 % Specify refractive indices
 n_medium = 1.33;
 n_particle = 1.59;

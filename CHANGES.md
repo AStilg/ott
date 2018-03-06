@@ -1,6 +1,11 @@
 Change history
 ==============
 
+Version 1.4
+-----------
+
+* Makes the toolbox a package, depreciates functions and moves things.
+
 Version 1.3.1
 -------------
 

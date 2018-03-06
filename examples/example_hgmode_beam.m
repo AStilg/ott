@@ -12,6 +12,9 @@
 % 
 % PACKAGE INFO
 
+import ott.*
+import ott.utils.*
+
 %% set up
 %first off. which mode do we want?
 % we want hg_(3,2). what's the order?

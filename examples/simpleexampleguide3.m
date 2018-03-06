@@ -1,3 +1,6 @@
+
+import ott.*
+import ott.utils.*
 %code to calculate counter propagating beams
 n_relative = 2; %relative refractive index = 2
 r_particle = 1;   %particle radius is 1 wavelength in the medium

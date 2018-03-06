@@ -11,6 +11,9 @@
 %
 % PACKAGE INFO
 
+import ott.*
+import ott.utils.*
+
 % Low res version.
 size_range_rad=linspace(1e-2,3.25,100)*1e-6/2; %radius in SI
 index_range=linspace(1.34,2.66,50);            %absolute refractive index

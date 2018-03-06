@@ -1,5 +1,8 @@
 %the thing daryl wanted me to do...
 
+import ott.*
+import ott.utils.*
+
 verbose=1;
 
 x=linspace(-2,2,200);

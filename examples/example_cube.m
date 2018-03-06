@@ -23,6 +23,9 @@
 %
 % PACKAGE INFO
 
+import ott.*
+import ott.utils.*
+
 %Tries to clear T matrix if 1. It is good to make 0 if you want repeated
 %calculations of the same particle.
 clearT=1;

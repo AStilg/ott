@@ -1,3 +1,6 @@
+
+import ott.*
+import ott.utils.*
 %code to calculate the force acting upon a wavelength radius sphere at the origin
 n_relative=1.2; %relative refractive index = 1.2
 r_particle=1;   %particle radius is 1 wavelength in the medium
