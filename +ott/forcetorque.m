@@ -1,7 +1,8 @@
-function [force,torque,spin] = forcetorque(n,m,a,b,p,q)
+function [force,torque,spin] = forcetorque(ibeam, sbeam)
 % forcetorque.m
 %
 % Finds optical force and torque
+% TODO: Clean up documentation
 %
 % Usage:
 % force = forcetorque(n,m,a,b,p,q)
@@ -21,41 +22,27 @@ function [force,torque,spin] = forcetorque(n,m,a,b,p,q)
 % then the force and torque are in units of the momentum per photon
 % and hbar per photon.
 %
-% WARNING: This code will be set up to expect a,b,p,q
-% in either the incident-scattered or incoming-outgoing
-% formulations! Check that it matches the one you use!
-%
-% PACKAGE INFO
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
 
 warning('ott:forcetorque:depreciated', ...
     ['This file will be replaced with ' ...
     'force_torque_farsund.m in the next release']);
 
-import ott.*
-import ott.utils.*
-
-% Uncomment one of the following:
-incidentscattered = 1; % YES, I AM USING INCIDENT-SCATTERED FORMULATION
-% incidentscattered = 0; % NO, I AM NOT, I USE INCOMING-OUTGOING FORMULATION
-
-if nargin==4
-    if length(a)==length(b)
-        labpq=length(a)/2;
-        p=b(1:labpq);
-        q=b(labpq+1:end);
-        b=a(labpq+1:end);
-        a=a(1:labpq);
-    else
-        error('[a;b] must be the same size as [p;q]!')
-    end
+% Ensure beams are the same size
+if ibeam.Nmax > sbeam.Nmax
+  sbeam.Nmax = ibeam.Nmax;
+elseif ibeam.Nmax < sbeam.Nmax
+  ibeam.Nmax = sbeam.Nmax;
 end
 
-% The force/torque calculations are easiest in the incoming-outgoing
-% formulation, so convert to it if necessary
-if incidentscattered
-    p = 2*p + a;
-    q = 2*q + b;
-end
+% Ensure the beam is incomming-outgoing
+sbeam = sbeam.toOutgoing(ibeam);
+
+% Get the relevent beam coefficients
+[a, b] = ibeam.getCoefficients();
+[p, q] = sbeam.getCoefficients();
+[n, m] = ibeam.getModeIndices();
 
 force = [ 0 0 0 ];
 torque = [ 0 0 0 ];
@@ -69,48 +56,41 @@ spin(3) = spinz(n,m,a,b) - spinz(n,m,p,q);
 % Now find x,y components by rotating by 90 degrees and re-using the
 % z-component formulae
 
-ci = combined_index(n,m);
-[n2,m2] = combined_index(1:combined_index(max(n),max(n)));
-n2 = n2(:);
-m2 = m2(:);
-
 % First, rotate x axis onto z axis
 
-R = calc_rotation_matrix([0 pi/2 0]);
-D = wigner_rotation_matrix(max(n),R);
-D = D(:,ci);
+[~, D] = ibeam.rotateY(pi/2);
 
 a2 = D*a;
 b2 = D*b;
 p2 = D*p;
 q2 = D*q;
 
-force(1) = forcez(n2,m2,a2,b2) - forcez(n2,m2,p2,q2);
-torque(1) = sum( m2.*( abs(a2).^2 + abs(b2).^2 - abs(p2).^2 - abs(q2).^2 ) );
-spin(1) = spinz(n2,m2,a2,b2) - spinz(n2,m2,p2,q2);
+force(1) = forcez(n,m,a2,b2) - forcez(n,m,p2,q2);
+torque(1) = sum( m.*( abs(a2).^2 + abs(b2).^2 - abs(p2).^2 - abs(q2).^2 ) );
+spin(1) = spinz(n,m,a2,b2) - spinz(n,m,p2,q2);
 
 % Finally, rotate (original) y axis onto z axis
 
-R = calc_rotation_matrix([pi/2 0 0]);
-D = wigner_rotation_matrix(max(n),R);
-D = D(:,ci);
+[~, D] = ibeam.rotateX(pi/2);
 
 a2 = D*a;
 b2 = D*b;
 p2 = D*p;
 q2 = D*q;
 
-force(2) = forcez(n2,m2,a2,b2) - forcez(n2,m2,p2,q2);
-torque(2) = sum( m2.*( abs(a2).^2 + abs(b2).^2 - abs(p2).^2 - abs(q2).^2 ) );
-spin(2) = spinz(n2,m2,a2,b2) - spinz(n2,m2,p2,q2);
+force(2) = forcez(n,m,a2,b2) - forcez(n,m,p2,q2);
+torque(2) = sum( m.*( abs(a2).^2 + abs(b2).^2 - abs(p2).^2 - abs(q2).^2 ) );
+spin(2) = spinz(n,m,a2,b2) - spinz(n,m,p2,q2);
 
-
-return
+end
 
 
 % Find z-component of force
 % Magic formula from Crichton
 function fz = forcez(n,m,a,b)
+
+import ott.*
+import ott.utils.*
 
 ci = combined_index(n,m);
 
@@ -141,6 +121,9 @@ return
 
 % Also magic formula for z-component of spin
 function sz = spinz(n,m,a,b)
+
+import ott.*
+import ott.utils.*
 
 ci = combined_index(n,m);
 

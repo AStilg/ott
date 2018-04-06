@@ -1,5 +1,6 @@
-function [force,torque] = force_z(n,m,a,b,p,q)
+function [force,torque] = force_z(ibeam, sbeam)
 % force_z.m: Finds z component of optical force and torque
+% TODO: Clean up documentation
 %
 % Usage:
 % [Fz,Tz] = force_z(n,m,a,b,p,q)
@@ -15,39 +16,26 @@ function [force,torque] = force_z(n,m,a,b,p,q)
 % then the force and torque are in units of the momentum per photon
 % and hbar per photon.
 %
-% WARNING: This code will be set up to expect a,b,p,q
-% in either the incident-scattered or incoming-outgoing
-% formulations! Check that it matches the one you use!
-%
-% PACKAGE INFO
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
 
 warning('ott:force_z:depreciated', ...
     'This file will be removed in the next release');
 
-import ott.*
-
-% Uncomment one of the following:
-incidentscattered = 1; % YES, I AM USING INCIDENT-SCATTERED FORMULATION
-% incidentscattered = 0; % NO, I AM NOT, I USE INCOMING-OUTGOING FORMULATION
-
-if nargin==4
-    if length(a)==length(b)
-        labpq=length(a)/2;
-        p=b(1:labpq);
-        q=b(labpq+1:end);
-        b=a(labpq+1:end);
-        a=a(1:labpq);
-    else
-        error('[a;b] must be the same size as [p;q]!')
-    end
+% Ensure beams are the same size
+if ibeam.Nmax > sbeam.Nmax
+  sbeam.Nmax = ibeam.Nmax;
+elseif ibeam.Nmax < sbeam.Nmax
+  ibeam.Nmax = sbeam.Nmax;
 end
 
-% The force/torque calculations are easiest in the incoming-outgoing
-% formulation, so convert to it if necessary
-if incidentscattered
-    p = 2*p + a;
-    q = 2*q + b;
-end
+% Ensure the beam is incomming-outgoing
+sbeam = sbeam.toOutgoing(ibeam);
+
+% Get the relevent beam coefficients
+[a, b] = ibeam.getCoefficients();
+[p, q] = sbeam.getCoefficients();
+[n, m] = ibeam.getModeIndices();
 
 force = forcez(n,m,a,b) - forcez(n,m,p,q);
 torque = sum( m.*( abs(a).^2 + abs(b).^2 - abs(p).^2 - abs(q).^2 ) );
@@ -58,6 +46,9 @@ return
 % Find z-component of force
 % Magic formula from Crichton
 function fz = forcez(n,m,a,b)
+
+import ott.*
+import ott.utils.*
 
 ci = combined_index(n,m);
 

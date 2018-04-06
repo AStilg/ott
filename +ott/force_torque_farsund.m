@@ -1,7 +1,8 @@
-function [fx,fy,fz,tx,ty,tz,sx,sy,sz]=force_torque_farsund(n,m,a,b,p,q)
+function [fx,fy,fz,tx,ty,tz,sx,sy,sz]=force_torque_farsund(ibeam, sbeam)
 % FORCE_TORQUE_FARSUND calculate force/torque/spin in a 3D orthogonal space
 % If the beam shape coefficients are in the original coordinates,
 % this outputs the force, torque and spin in 3D carteisan coordinates.
+% TODO: Fix up documentation
 %
 %   [fxyz,txyz,sxyz] = FORCE_TORQUE_FARSUND(...) calculates the force,
 %   torque and spin and stores them in [3, 1] column vectors.  Torque
@@ -20,22 +21,34 @@ function [fx,fy,fz,tx,ty,tz,sx,sy,sz]=force_torque_farsund(n,m,a,b,p,q)
 % Chricton and Marsden, 2000, and our standard T-matrix notation S.T.
 % E_{inc}=sum_{nm}(aM+bN);
 %
-% PACKAGE INFO
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
 
 warning('ott:force_torque_farsund:depreciated', ...
     'This file will replace forcetorque.m in the next release');
 
 import ott.*
+import ott.utils.*
 
-nmax=max(n);
+% Ensure beams are the same size
+if ibeam.Nmax > sbeam.Nmax
+  sbeam.Nmax = ibeam.Nmax;
+elseif ibeam.Nmax < sbeam.Nmax
+  ibeam.Nmax = sbeam.Nmax;
+end
+
+% Ensure the beam is incomming-outgoing
+sbeam = sbeam.toOutgoing(ibeam);
+
+% Get the relevent beam coefficients
+[a, b] = ibeam.getCoefficients();
+[p, q] = sbeam.getCoefficients();
+[n, m] = ibeam.getModeIndices();
+
+nmax=ibeam.Nmax;
 
 b=1i*b;
 q=1i*q;
-
-if 1
-    p=a+2*p;
-    q=b+2*q;
-end
 
 addv=zeros(2*nmax+3,1);
 
