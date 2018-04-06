@@ -19,6 +19,9 @@ function [structureOutput]=trapping_landscape(index_range,size_range_rad,system_
 %
 % PACKAGE INFO
 
+% This function is not directly concerned with force/torque calculation
+warning('This function will move in a future release');
+
 import ott.*
 import ott.utils.*
 

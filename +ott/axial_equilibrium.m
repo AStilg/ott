@@ -12,6 +12,9 @@ function [z,kz] = axial_equilibrium(tmatrix,beam,z)
 %
 % PACKAGE_INFO
 
+% This function is not directly concerned with force/torque calculation
+warning('This function will move in a future release');
+
 if nargin < 4
     z = 0;
 end
