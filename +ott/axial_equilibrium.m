@@ -1,4 +1,4 @@
-function [z,kz] = axial_equilibrium(T,a,b,z)
+function [z,kz] = axial_equilibrium(tmatrix,beam,z)
 % axial_equilibrium.m : find equilibrium position and stiffness along 
 %                               beam axis
 %
@@ -7,43 +7,25 @@ function [z,kz] = axial_equilibrium(T,a,b,z)
 % [z,kz] = axial_equilibrium(T,a,b,initial_guess);
 % where T = T-matrix, a,b = multipole expansion of beam.
 %
+% TODO: Fix up documentation for this function.  What method does
+%  it use, can we switch between methods?  This function could be better.
+%
 % PACKAGE_INFO
-
-import ott.*
 
 if nargin < 4
     z = 0;
 end
 
-szT=size(T)/2;
-sza=length(a);
+% Ensure T-matrix and beam are the same size
+Nmax = max(tmatrix.Nmax, beam.Nmax);
+tmatrix.Nmax = Nmax;
+beam.Nmax = Nmax;
 
-if max(szT)>sza %zero pad a,b
-    anew=sparse(szT(1),1);
-    bnew=anew;
-    anew(1:sza)=a;
-    bnew(1:sza)=b;
-    a=anew;
-    b=bnew;
-    clear anew bnew;
-    nmax=floor(sqrt(szT(1)));
-else
-    Tnew=sparse(2*szT(2),2*length(a));
-    Tnew(:,1:szT(1))=T(:,1:szT(1));
-    Tnew(:,sza+1:sza+szT(1))=T(:,szT(1)+1:end);
-    nmax=floor(sqrt(sza));
-    T=Tnew;
-    clear Tnew;
-end
+equiv_ka = nmax2ka(Nmax);
 
-equiv_ka = nmax2ka(nmax);
-
-power=sqrt(sum(abs(a).^2+abs(b).^2));
-
-a=a/power;
-b=b/power;
-
-[n,m]=combined_index(1:nmax^2+2*nmax);
+% Normalise the beam power
+power=beam.power();
+beam = beam / power;
 
 %start with three points each side over a 1/8 wavelength:
 zd=.25;
@@ -63,17 +45,9 @@ while ~chkflg
     jj=jj+1;
     for ii=1:length(zs)
         if fz(ii)==0
-            [A,B] = translate_z(nmax,zs(ii));
-            a1 = ( A*a + B*b );
-            b1 = ( A*b + B*a );
-            
-            pq=T*[a1;b1];
-            
-            p(1:length(pq)/2)=pq(1:length(pq)/2);
-            q(1:length(pq)/2)=pq(length(pq)/2+1:end);
-            
-            %power has already been normalized to 1.
-            fz(ii)=force_z(n(:),m(:),a1(:),b1(:),p(:),q(:));
+            tbeam = beam.translateZ(zs(ii));
+            sbeam = tmatrix * tbeam;
+            fz(ii)=force_z(tbeam, sbeam);
         end
     end
     
