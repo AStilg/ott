@@ -1,4 +1,4 @@
-function [structureoutput]=electromagnetic_field_xyz(kxyz,nm,ab,pq,cd,varargin)
+function [structureoutput]=electromagnetic_field_xyz(kxyz,nm,ibeam,obeam,rbeam,varargin)
 % electromagnetic_field_xyz.m : Calculates the fields of any of the
 %                                incident, scattered or internal
 %                                beam shape coefficients.
@@ -34,42 +34,26 @@ function [structureoutput]=electromagnetic_field_xyz(kxyz,nm,ab,pq,cd,varargin)
 % n,m are the mode indices, these can be in truncated form. The calculation
 % will be quicker if a truncated n and m can be used.
 %
+% TODO: Fix up documentation for varargin options.
+%
 % NOTE: If internal fields are calculated only the theta and phi components
 % of E are continuous at the boundary. Conversely, only the kr component of
 % D is continuous at the boundary.
 %
-% PACKAGE INFO
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
 
-import ott.*
-import utils.*
+p = inputParser;
+p.addParameter('relativerefractiveindex', 1);
+p.addParameter('tolerance', 1e-8);
+p.addParameter('displacementfield', 0);
+p.addParameter('verbose', false);
+p.parse(varargin{:});
 
-verbose=0;
-
-relindx=1;
-tol=1e-8;
-dfield=0;
-if numel(varargin)>0
-    for ii=1:length(varargin)
-        switch class(varargin{ii})
-            case 'cell'
-                switch lower(varargin{ii}{1})
-                    case 'relativerefractiveindex'
-                        relindx=varargin{ii}{2};
-                    case 'tolerance'
-                        tol=varargin{ii}{2};
-                    case 'displacementfield'
-                        try
-                            dfield=varargin{ii}{2};
-                        catch
-                            dfield=1;
-                        end
-                    otherwise
-                        warning('not a known parameter!')
-                end
-            otherwise
-        end
-    end
-end
+relindx = p.Results.relativerefractiveindex;
+tol = p.Results.tolerance;
+dfield = p.Results.displacementfield;
+verbose = p.Results.verbose;
 
 lengthnm=size(nm,1)/2;
 
@@ -78,31 +62,29 @@ m=nm(size(nm,1)/2+1:size(nm,1),1);
 
 ci=combined_index(n,m);
 
-try
-    lengthab=size(ab,1)/2;
-    ab=full(ab([ci;ci+lengthab]));
-catch
-    ab=[];
+behaviour=0;
+
+if ~isempty(ibeam)
+  ibeam.Nmax = max(n);
+  [a,b] = ibeam.getCoefficients(ci);
+  behaviour=behaviour+1;
 end
 
-try
-    lengthpq=size(pq,1)/2;
-    pq=full(pq([ci;ci+lengthpq]));
-catch
-    pq=[];
+if ~isempty(obeam)
+  obeam.Nmax = max(n);
+  [p,q] = obeam.getCoefficients(ci);
+  behaviour=behaviour+2;
 end
 
-try
-    lengthcd=size(cd,1)/2;
-    cd=full(cd([ci;ci+lengthcd]));
-catch
-    cd=[];
+if ~isempty(rbeam)
+  rbeam.Nmax = max(n);
+  [c,d] = rbeam.getCoefficients(ci);
+  behaviour=behaviour+4;
 end
 
-%calculate the space
-lengthab=size(ab,1)/2;
-lengthcd=size(cd,1)/2;
-lengthpq=size(pq,1)/2;
+if behaviour==0
+    error('no non-zero elements!')
+end
 
 [rv,tv,pv]=xyz2rtp(kxyz(:,1),kxyz(:,2),kxyz(:,3));
 
@@ -117,31 +99,8 @@ r_new(r_new==0)=1e-15;
 %look for biggest and smallest elements in the matrix, kill elements
 %less than tol of the max.
 
-behaviour=0;
-if lengthab~=0
-    behaviour=behaviour+1;
-    a=ab(1:lengthab,:);
-    b=ab(lengthab+1:end,:);
-end
-
-if lengthpq~=0
-    behaviour=behaviour+2;
-    p=pq(1:lengthpq,:);
-    q=pq(lengthpq+1:end,:);
-end
-
-if lengthcd~=0
-    behaviour=behaviour+4;
-    c=cd(1:lengthcd,:);
-    d=cd(lengthcd+1:end,:);
-end
-
 if verbose
     behaviour
-end
-
-if behaviour==0
-    error('no non-zero elements!')
 end
 
 E1 = zeros(size(kxyz));
@@ -574,7 +533,7 @@ if behaviour==7||behaviour==4||behaviour==5||behaviour==6
     
 end
 
-if behaviour==2|behaviour==3|behaviour==6|behaviour==7
+if behaviour==2||behaviour==3||behaviour==6||behaviour==7
     
     [Exv2,Eyv2,Ezv2] = rtpv2xyzv(E2(:,1),E2(:,2),E2(:,3),rv,tv,pv);
     Ex2=Exv2;
@@ -602,7 +561,7 @@ if behaviour==2|behaviour==3|behaviour==6|behaviour==7
     structureoutput.Hscattered=[squeeze(Hx2),squeeze(Hy2),squeeze(Hz2)];
     
 end
-if behaviour==1|behaviour==3|behaviour==5|behaviour==7
+if behaviour==1||behaviour==3||behaviour==5||behaviour==7
     
     [Exv1,Eyv1,Ezv1] = rtpv2xyzv(E1(:,1),E1(:,2),E1(:,3),rv,tv,pv);
     Ex1=Exv1;
