@@ -1,16 +1,17 @@
 function [out1,out2] = combined_index(in1,in2)
-% combined_index.m - translates between (n,m) and combined index
-%                    ci = n * (n+1) + m
+%COMBINED_INDEX translates between (n,m) and combined index
+% Mode indices and combined index are related by: ci = n * (n+1) + m.
 %
-% Usage:
-% [n,m] = combined_index(ci);
-% ci = combined_index(n,m);
+% [n,m] = COMBINED_INDEX(ci) calculates (n,m) from the combined index.
 %
-% This file is part of the package Optical tweezers toolbox 1.3
-% Copyright 2006-2013 The University of Queensland.
-% See README.txt or README.m for license and details.
+% ci = COMBINED_INDEX(n,m) calculates the combined index from mode indices.
 %
-% http://www.physics.uq.edu.au/people/nieminen/software.html
+% length = COMBINED_INDEX(Nmax, Nmax) calculates length of the beam vectors.
+%
+% Nmax = COMBINED_INDEX(length) calculates Nmax from length of beam vectors.
+%
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
 
 % Sanity check
 if nargin == 1

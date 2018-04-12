@@ -1,3 +1,5 @@
 
 *.swp
+*.m~
 
+octave-workspace

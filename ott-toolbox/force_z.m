@@ -1,10 +1,11 @@
 function [force,torque] = force_z(n,m,a,b,p,q)
-% force_z.m: Finds z component of optical force and torque
+%FORCE_Z finds z component of optical force and torque
 %
-% Usage:
-% [Fz,Tz] = force_z(n,m,a,b,p,q)
-% OR
-% [Fz,Tz] = force_z(n,m,ab,pq)
+% [Fz,Tz] = force_z(n,m,a,b,p,q) and
+% [Fz,Tz] = force_z(n,m,ab,pq) calculate force and torque
+% between incident ab beam and scattered pq beam.
+% Beams can be specified as separate column vectors or combined vectors
+% ab = [a;b], pq = [p;q], where a,b,p,q are the beam coefficients.
 %
 % What units are you using for a,b,p,q?
 % If you have simple units like (using incoming/outgoing):
@@ -19,7 +20,14 @@ function [force,torque] = force_z(n,m,a,b,p,q)
 % in either the incident-scattered or incoming-outgoing
 % formulations! Check that it matches the one you use!
 %
-% PACKAGE INFO
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
+
+ott_warning('ott:force_z:depreciated', ...
+    ['force_z.m will be removed in ott1.4. forcetorque.m will ' ...
+    'have an efficient implementation of force calculation.']);
+
+ott_warning('internal');
 
 % Uncomment one of the following:
 incidentscattered = 1; % YES, I AM USING INCIDENT-SCATTERED FORMULATION
@@ -33,6 +41,7 @@ if nargin==4
         b=a(labpq+1:end);
         a=a(1:labpq);
     else
+        ott_warning('external');
         error('[a;b] must be the same size as [p;q]!')
     end
 end
@@ -47,8 +56,7 @@ end
 force = forcez(n,m,a,b) - forcez(n,m,p,q);
 torque = sum( m.*( abs(a).^2 + abs(b).^2 - abs(p).^2 - abs(q).^2 ) );
 
-return
-
+ott_warning('external');
 
 % Find z-component of force
 % Magic formula from Crichton
@@ -78,6 +86,3 @@ fz = 2 * mm ./ nn ./ (nn+1) .* imag( conj(aa) .* bb ) ...
     .* imag( aa.*conj(aap) + bb.*conj(bbp) );
 
 fz = sum(fz);
-
-return
-

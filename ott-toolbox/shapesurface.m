@@ -1,27 +1,35 @@
 function [r,n,rotsym,xyz_vec] = shapesurface(theta,phi,shape,parameters)
-% shapesurface.m
+% SHAPESURFACE calclates radii and normals for use with tmatrix_pm.
 % Generates radii and normals to the surface for a range of
 % shapes for which the surface is a function of angle (theta,phi).
 %
-% Usage:
-% [r,n,rotsym] = shapesurface(theta,phi,shape,parameters);
+% [r,n,rotsym] = SHAPESURFACE(theta,phi,shape,parameters) calculates
+% radii, r, Nx3 unit-length normals, n, and a parameter describing if the
+% shape is rotationally symetric, rotsym.
+% theta, phi specify the points to calculate the radii and normals for.
+% shape and parameters (see bellow) describe the shape to use.
 %
-% where 
-% n is the unit-length normal, stored as
-%   a points-by-3 matrix with columns [ nr ntheta nphi ]
-% rotsym = 3 -> the shape is a cube
-% rotsym = 2 -> the shape is a sphere
-% rotsym = 1 -> the shape is rotationally symmetric about the z-axis
-% rotsym = 0 -> no axisymmetry
-% and
-% shape = 0: ellipsoid, parameters = [ a b c ]
-% shape = 1: cylinder, z-axis, parameters = [ r h ]
-% shape = -1: cylinder, x-axis, parameters = [ r h ]
-% shape = 2: superellipsoid, paramteres = [ a b c e n ]
-% shape = 3: cone-tipped cylinder, parameters = [ r h d ], d = cone height
-% shape = 4: cube, parameters = [d], d = width of cube
+% [~,~,rotsym] = SHAPESURFACE([], [], shape, parameters) calculates the
+% rotational symetric of the shape.
 %
-% PACKAGE INFO
+% rotsym will be one of:
+%     3 -> the shape is a cube
+%     2 -> the shape is a sphere
+%     1 -> the shape is rotationally symmetric about the z-axis
+%     0 -> no axisymmetry
+%
+% Supported shapes [parameters]:
+%     0   ellipsoid [ a b c ]
+%     1   cylinder, z-axis [ radius height ]
+%    -1   cylinder, x-axis [ radius height ]
+%     2   superellipsoid [ a b c e n ]
+%     3   cone-tipped cylinder [ radius height cone_height ]
+%     4   cube [ width ]
+%
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
+
+ott_warning('internal');
 
 % For a surface defined by
 % r = r(theta,phi)
@@ -63,9 +71,9 @@ case 2
    c = parameters(3);
    ew = parameters(4);
    ns = parameters(5);
-   if a == b & ew == 1
+   if a == b && ew == 1
       rotsym = 1;
-      if a == c & ns == 1
+      if a == c && ns == 1
          rotsym = 2;
       end
    else
@@ -85,6 +93,7 @@ case 4
     d = parameters(1);
    
 otherwise
+   ott_warning('external');
    error('Unknown shape');
    
 end
@@ -93,6 +102,7 @@ end
 if isempty(theta)
    r = [];
    n = [];
+    ott_warning('external');
    return;
 end
 
@@ -136,7 +146,8 @@ case 1
 
     r = zeros(size(theta));
     n = [r r r];
-    sides = find( ( theta >= pi/2 - edge_angle ) & ( theta <= pi/2 + edge_angle ) );
+    sides = find( ( theta >= pi/2 - edge_angle ) ...
+        && ( theta <= pi/2 + edge_angle ) );
     top = find( theta < pi/2 - edge_angle );
     bottom = find( theta > pi/2 + edge_angle );
     ends = [ top; bottom ];
@@ -196,7 +207,8 @@ case 3
     
     r = zeros(size(theta));
     n = [r r r];
-    sides = find( ( theta >= pi/2 - edge_angle ) & ( theta <= pi/2 + edge_angle ) );
+    sides = find( ( theta >= pi/2 - edge_angle ) ...
+        && ( theta <= pi/2 + edge_angle ) );
     top = find( theta < pi/2 - edge_angle );
     bottom = find( theta > pi/2 + edge_angle );
     ends = [ top; bottom ];
@@ -242,13 +254,13 @@ for j = 1:length(theta_vec)
 
 % Now to collapse the sphere down to a cube
 
-if abs(x) == d/2 & abs(y) == d/2 & abs(z) == d/2
+if abs(x) == d/2 && abs(y) == d/2 && abs(z) == d/2
 a=1;
 x2 = a*x;
 y2 = a*y;
 z2 = a*z;
 n = [1 0 0];
-elseif abs(x) > d/2 & abs(x) > abs(y) & abs(x) > abs(z)
+elseif abs(x) > d/2 && abs(x) > abs(y) && abs(x) > abs(z)
 a = (d/2)/abs(x);
 x2 = a*x;
 y2 = a*y;
@@ -262,7 +274,7 @@ elseif x < -d/2
     norm = sqrt(n(1)^2 + n(2)^2 + n(3)^2);
     n = n./norm;
 end
-elseif abs(y) > d/2 & abs(y) > abs(x) & abs(y) > abs(z)
+elseif abs(y) > d/2 && abs(y) > abs(x) && abs(y) > abs(z)
 a = (d/2)/abs(y);
 x2 = a*x;
 y2 = a*y;
@@ -276,7 +288,7 @@ elseif y < -d/2
     norm = sqrt(n(1)^2 + n(2)^2 + n(3)^2);
     n = n./norm;
 end
-elseif abs(z) > d/2 & abs(z) > abs(x) & abs(z) > abs(y)
+elseif abs(z) > d/2 && abs(z) > abs(x) && abs(z) > abs(y)
 a = (d/2)/abs(z);
 x2 = a*x;
 y2 = a*y;
@@ -305,8 +317,10 @@ r = r_cube_vec;
 n = n_vec;
 
 otherwise
+   ott_warning('external');
    error('Unknown shape');
 end
 
+ott_warning('external');
 
 return

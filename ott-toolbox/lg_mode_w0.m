@@ -1,18 +1,17 @@
 function w0 = lg_mode_w0( mode, angle )
-% lg_mode_w0.m - gives paraxial waist parameter w0 to match a given 1/e^2 angle
+% LG_MODE_W0 gives paraxial waist parameter w0 to match a given 1/e^2 angle
 %
-% Usage:
-% w0 = lg_mode_w0( mode, angle );
-% where:
-% w0 is the waist parameter in units of wavelength
-% mode = [ p l ] [BUT CURRENTLY p MUST BE ZERO]
-%  or
-% mode = l (and p = 0 is assumed)
-% angle = 1/e^2 angle in degrees
+% w0 = LG_MODE_W0( mode, angle ) calculates the paraxial beam waist
+% for LG mode [ p, l ] with 1/e^2 angle (in degrees).
+% If mode is a single integer, p = 0 is assumed and l = mode.
 % 
 % Accuracy not guaranteed for very large l (ie > 200)
 %
-% PACKAGE INFO
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
+
+ott_warning('ott:lg_mode_w0:depreciated', ...
+    'lg_mode_w0.m file will be removed in ott1.4.');
 
 % Precalculated results for small l
 psi1 = [ 2.25262074788770;
@@ -47,9 +46,9 @@ psi3 = [ -4.859972437674526e-006;
    9.47541396001228 ];
 
 if length(mode) > 1
-   l = abs(mode(2));
+   l = 2*mode(1)+abs(mode(2));
 else
-   l = mode;
+   l = abs(mode);
 end
 
 if l == 0

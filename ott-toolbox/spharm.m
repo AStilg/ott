@@ -1,15 +1,12 @@
 function [Y,Ytheta,Yphi] = spharm(n,m,theta,phi)
-% spharm.m : scalar spherical harmonics and
-%            angular partial derivatives for given n,m (can take vector m).
+% SPHARM scalar spherical harmonics and angular partial derivatives.
 %
-% Usage:
-% Y = spharm(n,m,theta,phi)
-% or
-% [Y,dY/dtheta,1/sin(theta)*dY/dphi] = spharm(n,m,theta,phi)
-% or
-% Y = spharm(n,theta,phi)
-% or
-% [Y,dtY,dpY] = spharm(n,theta,phi)
+% Y = SPHARM(n,m,theta,phi) calculates scalar spherical harmonics.
+%
+% [Y,Ytheta,Yphi] = SPHARM(n,m,theta,phi) additionally, calculates
+% the angular partial derivatives dY/dtheta and 1/sin(theta)*dY/dphi.
+%
+% SPHARM(n,theta,phi) as above but for all m.
 %
 % Scalar n for the moment.
 % 
@@ -20,9 +17,13 @@ function [Y,Ytheta,Yphi] = spharm(n,m,theta,phi)
 %
 % "Out of range" n and m result in return of Y = 0
 %
-% PACKAGE INFO
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
+
+ott_warning('internal');
 
 if length(n)>1
+    ott_warning('external');
     error('n must be a scalar at present')
 end
 
@@ -75,6 +76,7 @@ Y = pnm .* expphi;
 if nargout <= 1
    Y=Y.';
    % Doesn't look like it
+   ott_warning('external');
    return
 end
 
@@ -119,5 +121,7 @@ Yphi = 1i/2 * sqrt((2*n+1)/(2*n+3)) * ...
 Y=Y(n+mi+1,:).';
 Yphi=Yphi(n+mi+1,:).';
 Ytheta=Ytheta(n+mi+1,:).';
+
+ott_warning('external');
 
 return

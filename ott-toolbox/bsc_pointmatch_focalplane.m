@@ -1,18 +1,24 @@
-function [nn,mm,a,b] = bsc_pointmatch_focalplane( nmax, beam_type, parameters )
-% bsc_pointmatch_focalplane.m
-% Uses an overdetermined point-matching method to find
-% spherical harmonic expansion of a laser beam.
+function [nn,mm,a,b] = bsc_pointmatch_focalplane( nmax, ~, parameters )
+%BSC_POINTMATCH_FOCALPLANE uses an overdetermined point-matching method
+% to find spherical harmonic expansion of a Gaussian laser beam.
 %
-% Usage:
-% [n,m,a,b] = bsc_pointmatch_focalplane( nmax, beam_type, parameters );
+% It is recommended that you use bsc_pointmatch_farfield instead as
+% this function provides a larger range of beam types.
 %
-% Currently available types of beams:
-% 0 Gauss-Hermite beam
-%   parameters: [ n m w0 P xcomponent ycomponent ]
-% 1 Laguerre-Gauss beam
-%   parameters: [ p l w0 P xcomponent ycomponent ]
+% [n,m,a,b] = BSC_POINTMATCH_FOCALPLANE( nmax, ~, parameters );
 %
-% PACKAGE INFO
+% parameters: [ ~ ~ w0 ~ xcomponent ycomponent ]
+%    w0    Beam waist
+%    xcomponent and ycomponent are the x and y polarisation components.
+%
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
+
+ott_warning('ott:bsc_pointmatch_focalplane:tightfocus', ...
+    ['This function is not recommended for accurate modelling ' ...
+    'of tightly focused beams, use bsc_pointmatch_farfield instead']);
+
+ott_warning('internal');
 
 zero_rejection_level = 1e-8;
 
@@ -148,6 +154,8 @@ for n = 1:length(nn)
    end
    
 end
+
+ott_warning('external');
 
 return
 

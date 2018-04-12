@@ -1,14 +1,12 @@
 function [D,D2] = wigner_rotation_matrix( nmax, R )
-% wigner_rotation_matrix.m
-% Rotation matrix for rotation of spherical harmonics or T-matrices
+% WIGNER_ROTATION_MATRIX rotation matrix for rotation of spherical
+% harmonics or T-matrices.
 %
-% Usage:
-% D = wigner_rotation_matrix(nmax,R)
-% [D,D2] = wigner_rotation_matrix(nmax,R)
-% where
-% R = cartesian coordinate rotation matrix
-% D = wigner D matrix, a' = D a
-% D2 = double matrix, D2 = [ D 0; 0 D], so [a';b'] = D [a;b]
+% D = WIGNER_ROTATION_MATRIX(nmax,R) calculates the rotation matrix
+% for the VSH given a coordinate rotation matrix R.  Usage: a' = D a.
+%
+% [D,D2] = wigner_rotation_matrix(nmax,R) additionally, calculates
+% the double matrix D2 = [ D 0; 0 D], so [a';b'] = D [a;b].
 %
 % D (and D2) are sparse
 %
@@ -16,7 +14,13 @@ function [D,D2] = wigner_rotation_matrix( nmax, R )
 % Note change in notation - here, use x' = Rx (x is row vector),
 % a' = Da (a is column vector) etc.
 %
-% PACKAGE INFO
+% This file is part of the optical tweezers toolbox.
+% See LICENSE.md for information about using/distributing this file.
+
+%warning('ott:wigner_rotation_matrix:move', ...
+%    'this function will move to ott.utils.wigner_rotation_matrix');
+
+ott_warning('internal');
 
 % Transform cartesian rotation matrix to spinor(?) rotation matrix
 %
@@ -29,12 +33,19 @@ function [D,D2] = wigner_rotation_matrix( nmax, R )
 % So, to transform cartesian coords to spinor coords,
 % s = x C / r
 
+% C = [  1/sqrt(2) 0 -1/sqrt(2);
+%       -i/sqrt(2) 0 -i/sqrt(2);
+%        0         1  0 ];
+% invC = [ 1/sqrt(2) i/sqrt(2) 0;
+%          0         0         1;
+%         -1/sqrt(2) i/sqrt(2) 0 ];
+
 C = [  1/sqrt(2) 0 -1/sqrt(2);
-      -i/sqrt(2) 0 -i/sqrt(2);
+      1i/sqrt(2) 0 1i/sqrt(2);
        0         1  0 ];
-invC = [ 1/sqrt(2) i/sqrt(2) 0;
+invC = [ 1/sqrt(2) -1i/sqrt(2) 0;
          0         0         1;
-        -1/sqrt(2) i/sqrt(2) 0 ];
+         -1/sqrt(2) -1i/sqrt(2) 0 ];
 
 % Since x' = x R, s' -> x' C = s invC R C -> s' = s (invC R C)
 
@@ -92,4 +103,4 @@ for n = 2:nmax
     
 end
 
-return
+ott_warning('external');
